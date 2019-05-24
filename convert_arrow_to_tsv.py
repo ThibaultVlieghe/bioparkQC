@@ -224,6 +224,7 @@ class convertArrow(object):
             except TypeError:
                 print idxData
                 print currData[1]
+                break
 
     def readCFG(self):
         print 'Reading config file ' + self.iCFG    
