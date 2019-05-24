@@ -165,62 +165,65 @@ class convertArrow(object):
         NbBlock = 0
         while not endFile:
             currData = data[idxData]
+            try
+                if 'Key' in currData[1]:
+                    if not isDown:
+                        answers = []
+                        currKey = int(currData[2].split('.')[0])
+                        currKeyPos = np.asarray(self.positions[currKey])
+                        start = currData[0]
+                        self.message('Look for key : '+str(currKey)) 
+                    else:
+                        self.message('Look for new key : '+str(currData[2].split('.')[0])) 
 
-            if 'Key' in currData[1]:
-                if not isDown:
-                    answers = []
-                    currKey = int(currData[2].split('.')[0])
-                    currKeyPos = np.asarray(self.positions[currKey])
-                    start = currData[0]
-                    self.message('Look for key : '+str(currKey)) 
-                else:
-                    self.message('Look for new key : '+str(currData[2].split('.')[0])) 
-                    
-                    index = idxData
-                    waitLastUP = True
-        
-            elif 'Input-DOWN' in currData[1]: # Check press down
-                distance = np.linalg.norm(currKeyPos-np.asarray(currData[2])) # Distance to currKey
-                pressDown = currData[0]
-                isDown = True
-                self.message('Press Down')
-            
-            elif 'Input-UP' in currData[1] and isDown:
-                self.message('Press Up')
-                isDown = False
-                stay = currData[0] - pressDown
-                if waitLastUP: # If last answer 
-                    self.message('Wait for last UP')
-                    waitLastUP = False
-                    idxData = index-1
-                    text = str(NbBlock) + '\t' + design[NbBlock] + '\t' + str(currKey) + '\t' + str(pressDown-start) + '\t' + str(stay) + '\t' + str(distance*4.8/163)
+                        index = idxData
+                        waitLastUP = True
+
+                elif 'Input-DOWN' in currData[1]: # Check press down
+                    distance = np.linalg.norm(currKeyPos-np.asarray(currData[2])) # Distance to currKey
+                    pressDown = currData[0]
+                    isDown = True
+                    self.message('Press Down')
+
+                elif 'Input-UP' in currData[1] and isDown:
+                    self.message('Press Up')
+                    isDown = False
+                    stay = currData[0] - pressDown
+                    if waitLastUP: # If last answer 
+                        self.message('Wait for last UP')
+                        waitLastUP = False
+                        idxData = index-1
+                        text = str(NbBlock) + '\t' + design[NbBlock] + '\t' + str(currKey) + '\t' + str(pressDown-start) + '\t' + str(stay) + '\t' + str(distance*4.8/163)
+                        for err in answers:
+                            text += '\t' + err[0] + '\t' + err[1]  + '\t' + err[2]  + '\t' +  err[3]
+
+                        text += '\n'
+                        oTSV.write(text)
+                    else:
+                        #ClosestKey-Err Time-Err StayTime-Err Distance-Err
+                        timeErr = str(pressDown-start)
+                        stayErr = str(stay)
+                        distanceErr = str(distance*4.8/163)
+                        closestKeyErr = self.closestKey(currData[2], self.positions) 
+                        answers.append((closestKeyErr,timeErr,stayErr,distanceErr))
+
+                elif 'Rest' in currData[1]:
+                    isDown = False
+                    stay = currData[0] - pressDown
+                    text = str(NbBlock) + '\t' + design[NbBlock] + '\t' + str(currKey) + '\t' + str(pressDown-start) + '\t' + str(0) + '\t' + str(distance*4.8/163)
                     for err in answers:
                         text += '\t' + err[0] + '\t' + err[1]  + '\t' + err[2]  + '\t' +  err[3]
-                    
+
                     text += '\n'
                     oTSV.write(text)
-                else:
-                    #ClosestKey-Err Time-Err StayTime-Err Distance-Err
-                    timeErr = str(pressDown-start)
-                    stayErr = str(stay)
-                    distanceErr = str(distance*4.8/163)
-                    closestKeyErr = self.closestKey(currData[2], self.positions) 
-                    answers.append((closestKeyErr,timeErr,stayErr,distanceErr))
-        
-            elif 'Rest' in currData[1]:
-                isDown = False
-                stay = currData[0] - pressDown
-                text = str(NbBlock) + '\t' + design[NbBlock] + '\t' + str(currKey) + '\t' + str(pressDown-start) + '\t' + str(0) + '\t' + str(distance*4.8/163)
-                for err in answers:
-                    text += '\t' + err[0] + '\t' + err[1]  + '\t' + err[2]  + '\t' +  err[3]
-                        
-                text += '\n'
-                oTSV.write(text)
-                NbBlock += 1
-            
-            idxData += 1
-            if idxData>len(data)-1:
-                endFile = True
+                    NbBlock += 1
+
+                idxData += 1
+                if idxData>len(data)-1:
+                    endFile = True
+            except:
+                print idxData
+                print currData[1]
 
     def readCFG(self):
         print 'Reading config file ' + self.iCFG    
