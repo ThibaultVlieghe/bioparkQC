@@ -165,7 +165,7 @@ class convertArrow(object):
         NbBlock = 0
         while not endFile:
             currData = data[idxData]
-            try
+            try:
                 if 'Key' in currData[1]:
                     if not isDown:
                         answers = []
