@@ -221,7 +221,7 @@ class convertArrow(object):
                 idxData += 1
                 if idxData>len(data)-1:
                     endFile = True
-            except:
+            except TypeError:
                 print idxData
                 print currData[1]
 
